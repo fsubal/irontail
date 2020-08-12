@@ -1,0 +1,91 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+# CSS - https://developer.mozilla.org/ja/docs/Web/CSS
+# Sass(SCSS) - http://sass-lang.com/
+# Stylus - https://learnboost.github.io/stylus/
+# PostCSS - https://postcss.org/
+[*.{css,scss,sass,styl,pcss}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Handlebars.js - http://handlebarsjs.com/
+[*.hbs]
+indent_style = space
+indent_size = 2
+
+# JavaScript - https://developer.mozilla.org/ja/docs/Web/JavaScript
+# TypeScript - https://www.typescriptlang.org/
+# React - https://reactjs.org/
+# Vue - https://vuejs.org/
+[*.{js,ts,jsx,tsx,vue}]
+indent_style = space
+indent_size = 2
+
+# JSON - http://json.org/
+# Composer - https://getcomposer.org/doc/04-schema.md
+[{*.json,composer.lock}]
+indent_style = space
+indent_size = 4
+
+# NPM - https://docs.npmjs.com/files/package.json
+# TypeScript - https://www.typescriptlang.org/
+# Stylint - https://rosspatton.github.io/stylint/
+# prettier - https://prettier.io/
+# ESlint - https://eslint.org/
+# VSCode Settings - https://code.visualstudio.com/docs/getstarted/settings
+[{package.json,tsconfig.json,.stylintrc,.prettierrc,.eslintrc,.vscode/settings.json}]
+indent_style = space
+indent_size = 2
+
+# PHP - http://php.net/
+[*.php]
+indent_style = space
+indent_size = 4
+
+# Python - https://www.python.org/
+[*.py]
+indent_style = space
+indent_size = 4
+
+# Ruby - https://www.ruby-lang.org/
+# Rake - https://github.com/ruby/rake
+[{*.rb,*.rake,Rakefile}]
+indent_style = space
+indent_size = 2
+
+# Shell script (bash) - https://www.gnu.org/software/bash/manual/bash.html
+[*.sh]
+indent_style = space
+indent_size = 4
+
+# SQL (MySQL) - https://www.mysql.com/
+[*.sql]
+indent_style = space
+indent_size = 2
+
+# Smarty 2 -http://www.smarty.net/docsv2/en/
+[*.tpl]
+indent_style = space
+indent_size = 4
+
+# XHTML - http://www.w3.org/TR/xhtml1/
+[*.xhtml]
+indent_style = space
+indent_size = 4
+
+# YAML - http://yaml.org/
+[{*.yml,*.yaml}]
+indent_style = space
+indent_size = 2
+
+# p(ixi)v

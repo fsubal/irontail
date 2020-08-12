@@ -1,9 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
     "module": "commonjs",
+    "declaration": true,
+    "target": "es2015",
+    "sourceMap": true,
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es2019", "esnext.asynciterable", "dom"]
+  },
+  "include": ["index.ts", "declaration.d.ts"]
 }
