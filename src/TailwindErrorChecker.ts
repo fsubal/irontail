@@ -11,7 +11,7 @@ export class TailwindErrorChecker {
 
   constructor(private readonly project: ts.server.Project) {}
 
-  enqueueUpdateCss() {
+  requestCompileCss() {
     if (TailwindErrorChecker.isPending) {
       return;
     }
@@ -21,7 +21,7 @@ export class TailwindErrorChecker {
       "enqueuing to load css definitions..."
     );
 
-    void this.tailwind.enqueueCompileCss().finally(() => {
+    void this.tailwind.requestCompileCss().finally(() => {
       this.stop();
     });
   }
@@ -37,8 +37,8 @@ export class TailwindErrorChecker {
       this.tailwind
     );
 
-    if (!TailwindClient.currentCss) {
-      this.enqueueUpdateCss();
+    if (!TailwindClient.currentCss || !this.tailwind.isFresh()) {
+      this.requestCompileCss();
     }
 
     this.project.projectService.logger.info("checking classnames usages...");

@@ -1,4 +1,5 @@
 import * as ts from "typescript/lib/tsserverlibrary";
+import * as fs from "fs";
 import * as path from "path";
 import * as glob from "glob";
 import extractClassNames from "./extractClassNames";
@@ -10,6 +11,16 @@ export class TailwindClient {
   private readonly projectRootPath = this.project.getCurrentDirectory();
 
   static currentCss?: Result[];
+
+  static lastUpdatedAt?: number;
+
+  getLastUpdatedAt() {
+    return fs.statSync(this.getConfigPath()).mtime.getTime();
+  }
+
+  isFresh() {
+    return TailwindClient.lastUpdatedAt === this.getLastUpdatedAt();
+  }
 
   /**
    * @see https://github.com/tailwindlabs/tailwindcss-intellisense/blob/eb28c540c3cff7cf4c625cf44a81e8a44164a9ed/src/class-names/index.js#L36
@@ -60,7 +71,7 @@ export class TailwindClient {
     return TailwindClient.currentCss;
   }
 
-  async enqueueCompileCss() {
+  async requestCompileCss() {
     const configPath = this.getConfigPath();
     const postcss = this.requirePostCss();
     const tailwindcss = this.requireTailwindCss();
@@ -73,6 +84,7 @@ export class TailwindClient {
       )
     ).then((result) => {
       TailwindClient.currentCss = result;
+      TailwindClient.lastUpdatedAt = this.getLastUpdatedAt();
 
       this.project.projectService.logger.info("compiled tailwind.css");
     });
