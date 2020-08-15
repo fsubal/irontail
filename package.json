@@ -8,6 +8,16 @@
     "build": "tsc -p .",
     "prepublishOnly": "yarn build"
   },
+  "directories": {
+    "dist": "dist"
+  },
+  "files": [
+    "README.md",
+    "demo.gif",
+    "dist",
+    "package.json",
+    "yarn.lock"
+  ],
   "devDependencies": {
     "@types/classnames": "^2.2.10",
     "@types/dlv": "^1.1.2",
