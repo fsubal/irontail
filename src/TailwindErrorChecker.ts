@@ -37,7 +37,7 @@ export class TailwindErrorChecker {
       this.tailwind
     );
 
-    if (!TailwindClient.currentCss || !this.tailwind.isFresh()) {
+    if (!TailwindClient.currentClasses || !this.tailwind.isFresh()) {
       this.requestCompileCss();
     }
 

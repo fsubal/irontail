@@ -24,7 +24,7 @@ function isClassNameCall(node: ts.Node): node is CallExpression {
 
 export class ClassNameDiagnostic {
   private diagnostics: EachDiagnostic[] = [];
-  private extractedClassNames = this.tailwind.extractClassNames();
+  private extractedClassNames = this.tailwind.getClassNames();
 
   constructor(
     private readonly sourceFile: ts.SourceFile,
