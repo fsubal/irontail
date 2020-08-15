@@ -4,6 +4,7 @@ import { TailwindErrorChecker } from "./src/TailwindErrorChecker";
 const factory: ts.server.PluginModuleFactory = () => ({
   create({ project, languageService: parent }) {
     const checker = new TailwindErrorChecker(project);
+    checker.requestCompileCss();
 
     return {
       ...parent,

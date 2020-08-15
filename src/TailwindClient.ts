@@ -10,7 +10,7 @@ import type { Result } from "postcss";
 export class TailwindClient {
   private readonly projectRootPath = this.project.getCurrentDirectory();
 
-  static currentCss?: Result[];
+  static currentClasses?: string[];
 
   static lastUpdatedAt?: number;
 
@@ -32,6 +32,10 @@ export class TailwindClient {
 
   constructor(private readonly project: ts.server.Project) {}
 
+  getClassNames() {
+    return TailwindClient.currentClasses ?? [];
+  }
+
   getConfigPath() {
     const [configPath] = glob.sync(this.configGlob);
     if (!configPath) {
@@ -43,32 +47,6 @@ export class TailwindClient {
     }
 
     return configPath;
-  }
-
-  extractClassNames() {
-    // const postcss = this.requirePostCss() as typeof import("postcss");
-    const css = this.getCompiledCss();
-    if (!css) {
-      return [];
-    }
-
-    const [base, components, utilities] = css;
-
-    const result = extractClassNames([
-      { root: base.root, source: "base" },
-      { root: components.root, source: "components" },
-      { root: utilities.root, source: "utilities" },
-    ]);
-
-    this.project.projectService.logger.info(
-      JSON.stringify(Object.keys(result.classNames))
-    );
-
-    return Object.keys(result.classNames);
-  }
-
-  getCompiledCss(): Result[] | undefined {
-    return TailwindClient.currentCss;
   }
 
   async requestCompileCss() {
@@ -83,8 +61,8 @@ export class TailwindClient {
         })
       )
     ).then((result) => {
-      TailwindClient.currentCss = result;
       TailwindClient.lastUpdatedAt = this.getLastUpdatedAt();
+      TailwindClient.currentClasses = this.extractClassNames(result);
 
       this.project.projectService.logger.info("compiled tailwind.css");
     });
@@ -97,6 +75,20 @@ export class TailwindClient {
     );
 
     return importFrom(tailwindRootPath, "postcss") as typeof import("postcss");
+  }
+
+  private extractClassNames([base, components, utilities]: Result[]) {
+    const { classNames } = extractClassNames([
+      { root: base.root, source: "base" },
+      { root: components.root, source: "components" },
+      { root: utilities.root, source: "utilities" },
+    ]);
+
+    const classes = Object.keys(classNames);
+
+    this.project.projectService.logger.info(JSON.stringify(classes));
+
+    return classes;
   }
 
   private requireTailwindCss() {
