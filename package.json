@@ -1,11 +1,11 @@
 {
   "name": "irontail",
   "version": "0.1.1",
-  "main": "index.js",
+  "main": "dist/index.js",
   "author": "fsubal <fsubal1102@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc index.ts",
+    "build": "tsc -p .",
     "prepublishOnly": "yarn build"
   },
   "devDependencies": {
