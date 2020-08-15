@@ -137,7 +137,7 @@ export class ClassNameDiagnostic {
           if (property.name && ts.isStringLiteral(property.name)) {
             children.push({
               className: property.name.text,
-              ...property,
+              ...property.name,
             });
           }
 
@@ -149,7 +149,7 @@ export class ClassNameDiagnostic {
           if (property.name && ts.isIdentifier(property.name)) {
             children.push({
               className: property.name.escapedText.toString(),
-              ...property,
+              ...property.name,
             });
           }
         });
