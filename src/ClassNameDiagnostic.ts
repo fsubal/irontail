@@ -46,8 +46,6 @@ export class ClassNameDiagnostic {
     rootNode: ts.Node
   ): ts.Node => {
     const visit = (node: ts.Node) => {
-      node = ts.visitEachChild(node, visit, context);
-
       if (isClassNameCall(node)) {
         this.getSuspiciousChildren(node).forEach(({ className, pos, end }) => {
           this.diagnostics.push({
@@ -56,9 +54,11 @@ export class ClassNameDiagnostic {
             messageText: `Unknown tailwind class: "${className}"`,
           });
         });
+
+        return node;
       }
 
-      return node;
+      return ts.visitEachChild<ts.Node>(node, visit, context);
     };
 
     return ts.visitNode(rootNode, visit);
