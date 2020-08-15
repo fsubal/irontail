@@ -6,6 +6,14 @@
 
 ## How to use
 
+```
+// npm
+npm i --save-dev irontail
+
+// yarn
+yarn add -D irontail
+```
+
 Just add to tsconfig.json
 
 ```
@@ -21,7 +29,7 @@ Just add to tsconfig.json
 Q. There is already [muhammadsammy/tailwindcss-classnames](https://github.com/muhammadsammy/tailwindcss-classnames). Why is this plugin useful?
 
 A.
-`irontail` just provides error checker instead of type generator.
+`irontail` just provides error checker out of the box, instead of type generator.
 
 When you use type generator,
 
