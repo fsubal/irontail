@@ -24,7 +24,6 @@ function isClassNameCall(node: ts.Node): node is CallExpression {
 
 export class ClassNameDiagnostic {
   private diagnostics: EachDiagnostic[] = [];
-  private extractedClassNames = this.tailwind.getClassNames();
 
   constructor(
     private readonly sourceFile: ts.SourceFile,
@@ -61,13 +60,15 @@ export class ClassNameDiagnostic {
   };
 
   private getUnknownClassNames(node: ts.CallExpression) {
+    const extractedClassNames = this.tailwind.getClassNames();
+
     return node.arguments
       .filter((argument): argument is ts.StringLiteral => {
         if (!ts.isStringLiteral(argument)) {
           return false;
         }
 
-        return !this.extractedClassNames.includes(argument.text);
+        return !extractedClassNames.includes(argument.text);
       })
       .map(({ text, pos, end }) => ({
         className: text,
