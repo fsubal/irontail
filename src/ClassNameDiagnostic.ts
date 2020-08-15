@@ -131,9 +131,24 @@ export class ClassNameDiagnostic {
        */
       if (ts.isObjectLiteralExpression(argument)) {
         argument.properties.forEach((property) => {
-          if (property.name && ts.isStringLiteralLike(property.name)) {
+          /**
+           * classNames({ 'hoge': true })
+           */
+          if (property.name && ts.isStringLiteral(property.name)) {
             children.push({
               className: property.name.text,
+              ...property,
+            });
+          }
+
+          /**
+           * classNames({ hoge: true })
+           * or
+           * classNames({ hoge })
+           */
+          if (property.name && ts.isIdentifier(property.name)) {
+            children.push({
+              className: property.name.escapedText.toString(),
               ...property,
             });
           }
