@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as ts from "typescript/lib/tsserverlibrary";
 import { ClassNameDiagnostic } from "./ClassNameDiagnostic";
 import { TailwindClient } from "./TailwindClient";
+import { DiagnosticsCache } from "./DiagnosticsCache";
 
 export class TailwindErrorChecker {
   private readonly tailwind = new TailwindClient(this.project);
@@ -31,6 +32,11 @@ export class TailwindErrorChecker {
   }
 
   getTailwindDiagnostics(fileName: string) {
+    const cached = DiagnosticsCache.read(fileName);
+    if (cached) {
+      return cached;
+    }
+
     const sourceFile = this.createSourceFile(fileName);
     const classNameDiagnostic = new ClassNameDiagnostic(
       sourceFile,
@@ -43,7 +49,7 @@ export class TailwindErrorChecker {
 
     this.project.projectService.logger.info("checking classnames usages...");
 
-    return classNameDiagnostic
+    const diagnostics = classNameDiagnostic
       .toArray()
       .map(({ start, length, messageText }) => ({
         source: "irontail",
@@ -54,6 +60,10 @@ export class TailwindErrorChecker {
         length,
         messageText,
       }));
+
+    DiagnosticsCache.upsert(fileName, diagnostics);
+
+    return diagnostics;
   }
 
   createSourceFile(fileName: string) {
