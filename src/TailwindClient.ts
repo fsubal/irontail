@@ -12,7 +12,7 @@ export class TailwindClient {
   static lastUpdatedAt?: number;
 
   getLastUpdatedAt() {
-    return fs.statSync(this.getConfigPath()).mtime.getTime();
+    return fs.statSync(this.getConfigPath()).mtimeMs;
   }
 
   isFresh() {
