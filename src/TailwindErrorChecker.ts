@@ -1,17 +1,22 @@
-import * as fs from "fs";
 import * as ts from "typescript/lib/tsserverlibrary";
 import { ClassNameDiagnostic } from "./ClassNameDiagnostic";
 import { TailwindClient } from "./TailwindClient";
 
 export class TailwindErrorChecker {
   private readonly tailwind = new TailwindClient(this.project);
-  private readonly compilerOption = this.project.getCompilerOptions();
 
   static isPending = false;
 
   constructor(private readonly project: ts.server.Project) {}
 
-  requestCompileCss() {
+  /**
+   * It's SLOW. Call only when really needed
+   */
+  loadCss() {
+    if (TailwindClient.currentClasses && this.tailwind.isFresh()) {
+      return;
+    }
+
     if (TailwindErrorChecker.isPending) {
       return;
     }
@@ -30,16 +35,11 @@ export class TailwindErrorChecker {
     TailwindErrorChecker.isPending = false;
   }
 
-  getTailwindDiagnostics(fileName: string) {
-    const sourceFile = this.createSourceFile(fileName);
+  getTailwindDiagnostics(sourceFile: ts.SourceFile) {
     const classNameDiagnostic = new ClassNameDiagnostic(
       sourceFile,
       this.tailwind
     );
-
-    if (!TailwindClient.currentClasses || !this.tailwind.isFresh()) {
-      this.requestCompileCss();
-    }
 
     this.project.projectService.logger.info("checking classnames usages...");
 
@@ -54,15 +54,5 @@ export class TailwindErrorChecker {
         length,
         messageText,
       }));
-  }
-
-  createSourceFile(fileName: string) {
-    const src = fs.readFileSync(fileName, { encoding: "utf8" });
-
-    return ts.createSourceFile(
-      fileName,
-      src,
-      this.compilerOption.target ?? ts.ScriptTarget.ESNext
-    );
   }
 }
