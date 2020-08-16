@@ -1,10 +1,9 @@
 import * as ts from "typescript/lib/tsserverlibrary";
 import * as fs from "fs";
 import * as path from "path";
-import { extractClassNames } from "./extractClassNames";
 import importFrom = require("import-from");
 import resolveFrom = require("resolve-from");
-import type { Result } from "postcss";
+import { extractClassNames } from "./extractClassNames";
 import { getTailwindConfigPath } from "./getTailwindConfigPath";
 
 export class TailwindClient {
@@ -48,20 +47,12 @@ export class TailwindClient {
       )
     ).then((result) => {
       TailwindClient.lastUpdatedAt = this.getLastUpdatedAt();
-      TailwindClient.currentClasses = this.extractClassNames(result);
+      TailwindClient.currentClasses = extractClassNames(result);
 
       this.project.projectService.logger.info(
         JSON.stringify(TailwindClient.currentClasses)
       );
     });
-  }
-
-  private extractClassNames([base, components, utilities]: Result[]) {
-    return extractClassNames([
-      { root: base.root, source: "base" },
-      { root: components.root, source: "components" },
-      { root: utilities.root, source: "utilities" },
-    ]);
   }
 
   private _postcss?: typeof import("postcss");
