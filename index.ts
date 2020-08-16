@@ -17,7 +17,7 @@ const factory: ts.server.PluginModuleFactory = () => ({
 
       getSemanticDiagnostics(fileName: string) {
         const diagnostics = parent.getSemanticDiagnostics(fileName);
-        if (TailwindErrorChecker.isPending) {
+        if (TailwindErrorChecker.isLoadingCss) {
           return diagnostics;
         }
 
@@ -37,7 +37,7 @@ const factory: ts.server.PluginModuleFactory = () => ({
       },
 
       dispose() {
-        checker.stop();
+        checker.onFinishLoadCss();
       },
     };
   },

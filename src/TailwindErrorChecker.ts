@@ -5,7 +5,7 @@ import { TailwindClient } from "./TailwindClient";
 export class TailwindErrorChecker {
   private readonly tailwind = new TailwindClient(this.project);
 
-  static isPending = false;
+  static isLoadingCss = false;
 
   constructor(private readonly project: ts.server.Project) {}
 
@@ -17,22 +17,22 @@ export class TailwindErrorChecker {
       return;
     }
 
-    if (TailwindErrorChecker.isPending) {
+    if (TailwindErrorChecker.isLoadingCss) {
       return;
     }
 
-    TailwindErrorChecker.isPending = true;
+    TailwindErrorChecker.isLoadingCss = true;
     this.project.projectService.logger.info(
       "enqueuing to load css definitions..."
     );
 
     void this.tailwind.requestCompileCss().finally(() => {
-      this.stop();
+      this.onFinishLoadCss();
     });
   }
 
-  stop() {
-    TailwindErrorChecker.isPending = false;
+  onFinishLoadCss() {
+    TailwindErrorChecker.isLoadingCss = false;
   }
 
   getTailwindDiagnostics(sourceFile: ts.SourceFile) {
