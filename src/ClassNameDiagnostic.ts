@@ -166,7 +166,7 @@ export class ClassNameDiagnostic {
     const extractedClassNames = this.tailwind.getClassNames();
 
     return children.filter(
-      ({ className }) => !extractedClassNames.includes(className)
+      ({ className }) => !extractedClassNames.hasOwnProperty(className)
     );
   }
 }

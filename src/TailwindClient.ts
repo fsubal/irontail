@@ -10,7 +10,7 @@ import type { Result } from "postcss";
 export class TailwindClient {
   private readonly projectRootPath = this.project.getCurrentDirectory();
 
-  static currentClasses?: string[];
+  static currentClasses?: Record<string, unknown>;
 
   static lastUpdatedAt?: number;
 
@@ -84,11 +84,7 @@ export class TailwindClient {
       { root: utilities.root, source: "utilities" },
     ]);
 
-    const classes = Object.keys(classNames);
-
-    this.project.projectService.logger.info(JSON.stringify(classes));
-
-    return classes;
+    return classNames;
   }
 
   private requireTailwindCss() {
