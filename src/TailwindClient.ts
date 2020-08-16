@@ -39,6 +39,8 @@ export class TailwindClient {
       ["base", "components", "utilities"].map((group) =>
         postcss([tailwindcss(configPath)]).process(`@tailwind ${group};`, {
           from: undefined,
+          to: undefined,
+          map: false,
         })
       )
     ).then((result) => {

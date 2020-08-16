@@ -1,5 +1,4 @@
 import * as ts from "typescript";
-import { TailwindClient } from "./TailwindClient";
 import { CallExpression, JsxAttribute } from "typescript/lib/tsserverlibrary";
 
 export interface EachDiagnostic {
@@ -41,7 +40,7 @@ export class ClassNameDiagnostic {
 
   constructor(
     private readonly sourceFile: ts.SourceFile,
-    private readonly tailwind: TailwindClient
+    private readonly extractedClassNames: Record<string, unknown>
   ) {}
 
   toArray(): EachDiagnostic[] {
@@ -177,10 +176,8 @@ export class ClassNameDiagnostic {
       }
     });
 
-    const extractedClassNames = this.tailwind.getClassNames();
-
     return children.filter(
-      ({ className }) => !extractedClassNames.hasOwnProperty(className)
+      ({ className }) => !this.extractedClassNames.hasOwnProperty(className)
     );
   }
 
@@ -214,10 +211,8 @@ export class ClassNameDiagnostic {
       }
     }
 
-    const extractedClassNames = this.tailwind.getClassNames();
-
     return children.filter(
-      ({ className }) => !extractedClassNames.hasOwnProperty(className)
+      ({ className }) => !this.extractedClassNames.hasOwnProperty(className)
     );
   }
 }
