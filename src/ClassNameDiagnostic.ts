@@ -8,6 +8,12 @@ export interface EachDiagnostic {
   messageText: string;
 }
 
+interface SuspiciousChildren {
+  pos: number;
+  end: number;
+  className: string;
+}
+
 const FUNCTION_NAMES = ["classNames", "classnames", "clsx"] as ts.__String[];
 
 function isClassNameCall(node: ts.Node): node is CallExpression {
@@ -40,40 +46,127 @@ export class ClassNameDiagnostic {
     rootNode: ts.Node
   ): ts.Node => {
     const visit = (node: ts.Node) => {
-      node = ts.visitEachChild(node, visit, context);
-
       if (isClassNameCall(node)) {
-        const unknownClasses = this.getUnknownClassNames(node);
-        unknownClasses.forEach(({ className, start, length }) => {
+        this.getSuspiciousChildren(node).forEach(({ className, pos, end }) => {
           this.diagnostics.push({
-            start,
-            length,
+            start: pos,
+            length: end - pos,
             messageText: `Unknown tailwind class: "${className}"`,
           });
         });
+
+        return node;
       }
 
-      return node;
+      return ts.visitEachChild<ts.Node>(node, visit, context);
     };
 
     return ts.visitNode(rootNode, visit);
   };
 
-  private getUnknownClassNames(node: ts.CallExpression) {
-    const extractedClassNames = this.tailwind.getClassNames();
+  private getSuspiciousChildren(node: ts.CallExpression) {
+    const children: SuspiciousChildren[] = [];
 
-    return node.arguments
-      .filter((argument): argument is ts.StringLiteral => {
-        if (!ts.isStringLiteral(argument)) {
-          return false;
+    /**
+     * @see https://github.com/JedWatson/classnames/blob/master/tests/index.js
+     *
+     * NOTICE: Not all cases are supported.
+     * For example, object/function using .toString() is not supported.
+     * @see https://github.com/JedWatson/classnames/blob/bbf03f73f30/tests/index.js#L94
+     */
+    node.arguments.forEach(function walk(argument) {
+      /**
+       * classNames('hoge')
+       */
+      if (ts.isStringLiteral(argument)) {
+        children.push({ className: argument.text, ...argument });
+      }
+
+      /**
+       * classNames(true && 'hoge')
+       */
+      if (ts.isBinaryExpression(argument)) {
+        if (ts.isStringLiteral(argument.right)) {
+          children.push({
+            className: argument.right.text,
+            ...argument.right,
+          });
+        }
+      }
+
+      /**
+       * classNames(true ? 'hoge' : 'moge')
+       */
+      if (ts.isConditionalExpression(argument)) {
+        /**
+         * classNames(true ? 'hoge' : 'moge')
+         *                   ^^^^^^
+         */
+        if (ts.isStringLiteral(argument.whenTrue)) {
+          children.push({
+            className: argument.whenTrue.text,
+            ...argument.whenTrue,
+          });
         }
 
-        return !extractedClassNames.includes(argument.text);
-      })
-      .map(({ text, pos, end }) => ({
-        className: text,
-        start: pos,
-        length: end - pos,
-      }));
+        /**
+         * classNames(true ? 'hoge' : 'moge')
+         *                            ^^^^^^
+         */
+        if (ts.isStringLiteral(argument.whenFalse)) {
+          children.push({
+            className: argument.whenFalse.text,
+            ...argument.whenFalse,
+          });
+        }
+      }
+
+      /**
+       * classNames({ hoge: true })
+       *
+       * NOTICE: followings are not supported
+       * - computed property ( { ['hoge']: true } )
+       * - private property ( { #hoge: true } )
+       * - numeric literal ( { 1: true } )
+       */
+      if (ts.isObjectLiteralExpression(argument)) {
+        argument.properties.forEach((property) => {
+          /**
+           * classNames({ 'hoge': true })
+           */
+          if (property.name && ts.isStringLiteral(property.name)) {
+            children.push({
+              className: property.name.text,
+              ...property.name,
+            });
+          }
+
+          /**
+           * classNames({ hoge: true })
+           * or
+           * classNames({ hoge })
+           */
+          if (property.name && ts.isIdentifier(property.name)) {
+            children.push({
+              className: property.name.escapedText.toString(),
+              ...property.name,
+            });
+          }
+        });
+      }
+
+      /**
+       * classNames(['hoge'], [{ moge: true }])
+       */
+      if (ts.isArrayLiteralExpression(argument)) {
+        argument.elements.forEach(walk);
+      }
+    });
+
+    const extractedClassNames = this.tailwind.getClassNames();
+
+    return children.filter(
+      ({ className }) => !extractedClassNames.includes(className)
+    );
   }
 }
