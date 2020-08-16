@@ -1,6 +1,6 @@
 import * as ts from "typescript";
 import { TailwindClient } from "./TailwindClient";
-import { CallExpression } from "typescript/lib/tsserverlibrary";
+import { CallExpression, JsxAttribute } from "typescript/lib/tsserverlibrary";
 
 export interface EachDiagnostic {
   start: number;
@@ -28,6 +28,14 @@ function isClassNameCall(node: ts.Node): node is CallExpression {
   return FUNCTION_NAMES.includes(node.expression.escapedText);
 }
 
+function isJsxClassNameAttribute(node: ts.Node): node is JsxAttribute {
+  if (!ts.isJsxAttribute(node)) {
+    return false;
+  }
+
+  return node.name.escapedText !== "className";
+}
+
 export class ClassNameDiagnostic {
   private diagnostics: EachDiagnostic[] = [];
 
@@ -47,13 +55,11 @@ export class ClassNameDiagnostic {
   ): ts.Node => {
     const visit = (node: ts.Node) => {
       if (isClassNameCall(node)) {
-        this.getSuspiciousChildren(node).forEach(({ className, pos, end }) => {
-          this.diagnostics.push({
-            start: pos,
-            length: end - pos,
-            messageText: `Unknown tailwind class: "${className}"`,
-          });
-        });
+        this.getSuspiciousArguments(node).forEach(this.handleFound);
+
+        return node;
+      } else if (isJsxClassNameAttribute(node)) {
+        this.getSuspiciousAttributes(node).forEach(this.handleFound);
 
         return node;
       }
@@ -64,7 +70,15 @@ export class ClassNameDiagnostic {
     return ts.visitNode(rootNode, visit);
   };
 
-  private getSuspiciousChildren(node: ts.CallExpression) {
+  private handleFound = ({ className, pos, end }: SuspiciousChildren) => {
+    this.diagnostics.push({
+      start: pos,
+      length: end - pos,
+      messageText: `Unknown tailwind class: "${className}"`,
+    });
+  };
+
+  private getSuspiciousArguments(node: ts.CallExpression) {
     const children: SuspiciousChildren[] = [];
 
     /**
@@ -162,6 +176,43 @@ export class ClassNameDiagnostic {
         argument.elements.forEach(walk);
       }
     });
+
+    const extractedClassNames = this.tailwind.getClassNames();
+
+    return children.filter(
+      ({ className }) => !extractedClassNames.hasOwnProperty(className)
+    );
+  }
+
+  private getSuspiciousAttributes(node: ts.JsxAttribute) {
+    const children: SuspiciousChildren[] = [];
+
+    if (node.initializer) {
+      /**
+       * <div className="aa">
+       */
+      if (ts.isStringLiteral(node.initializer)) {
+        children.push({
+          className: node.initializer.text,
+          ...node.initializer,
+        });
+      }
+
+      /**
+       * <div className={"aa"}>
+       */
+      if (ts.isJsxExpression(node.initializer)) {
+        if (
+          node.initializer.expression &&
+          ts.isStringLiteral(node.initializer.expression)
+        ) {
+          children.push({
+            className: node.initializer.expression.text,
+            ...node.initializer.expression,
+          });
+        }
+      }
+    }
 
     const extractedClassNames = this.tailwind.getClassNames();
 
