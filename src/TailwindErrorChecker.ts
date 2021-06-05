@@ -38,7 +38,7 @@ export class TailwindErrorChecker {
   getTailwindDiagnostics(sourceFile: ts.SourceFile) {
     const classNameDiagnostic = new ClassNameDiagnostic(
       sourceFile,
-      this.tailwind
+      this.tailwind.getClassNames()
     );
 
     this.project.projectService.logger.info("checking classnames usages...");
