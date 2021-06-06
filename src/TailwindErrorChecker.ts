@@ -47,7 +47,7 @@ export class TailwindErrorChecker {
       .toArray()
       .map(({ start, length, messageText }) => ({
         source: "irontail",
-        category: ts.DiagnosticCategory.Error,
+        category: ts.DiagnosticCategory.Warning,
         code: 0,
         file: sourceFile,
         start,
