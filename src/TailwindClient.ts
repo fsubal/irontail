@@ -30,14 +30,25 @@ export class TailwindClient {
     return getTailwindConfigPath(this.project);
   }
 
-  async requestCompileCss() {
+  getConfig() {
     const configPath = this.getConfigPath();
+
+    return {
+      ...require(configPath),
+
+      // NOTICE: extractClassNames would not work when { mode: "jit" }
+      mode: "aot",
+    };
+  }
+
+  async requestCompileCss() {
     const postcss = this.requirePostCss();
     const tailwindcss = this.requireTailwindCss();
+    const config = this.getConfig();
 
     return Promise.all(
       ["base", "components", "utilities"].map((group) =>
-        postcss([tailwindcss(configPath)]).process(`@tailwind ${group};`, {
+        postcss([tailwindcss(config)]).process(`@tailwind ${group};`, {
           from: undefined,
         })
       )
