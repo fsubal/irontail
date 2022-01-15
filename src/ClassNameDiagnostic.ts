@@ -32,7 +32,7 @@ function isJsxClassNameAttribute(node: ts.Node): node is JsxAttribute {
     return false;
   }
 
-  return node.name.escapedText !== "className";
+  return node.name.escapedText === "className";
 }
 
 export class ClassNameDiagnostic {
